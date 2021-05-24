@@ -1,0 +1,1859 @@
+https://github.com/HimaniAttri/LearningReferences
+
+https://learn.upgrad.com/course/1130
+
+https://live.upgrad.com/?state=COMPLETED
+
+ Upgradmsc6oh12#
+
+
+1.  FROM
+2.  ON
+3.  JOIN
+4.  WHERE
+5.  GROUP BY
+6.  WITH CUBE or WITH ROLLUP
+7.  HAVING
+8.  SELECT
+9.  DISTINCT
+10. ORDER BY
+11. TOP
+https://www.ip2location.com/
+
+-------------------------------------------
+
+Feedback :
+After loading the text file as RDD, the first step is to separate the column headers from the RDD. However, you may need the headers to refer to the column. So, store them as another RDD or list. Once that is done, you can split the elements of the text file using the map() function.
+
+Finally, you can use the reduceByKey() operation to compute the sum for the two categories: Male and Female.
+
+#load the text file
+file=sc.textFile("insurance.txt")
+
+#separate the headers from the rest of the rdd
+headers = file.first()
+headers_rdd = sc.parallelize([headers])
+file2 = file.subtract(headers_rdd)
+
+#Firstly split the words using map transformation and map the required columns. Finally, you can use the reduceByKey() operation to compute the sum for the two categories: Male and Female.
+file2.map(lambda x:x.split(",")).map(lambda y:(y[1], float(y[6]))).reduceByKey(lambda x, y: x+y).collect()
+
+file2.map(lambda x:x.split(",")).map(lambda y:(y[1], float(y[6]))).reduceByKey(lambda x, y: x+y).collect()
+
+Female: 12569.58, Male: 13956.75
+
+Feedback :
+You may have separated the headers in the previous question. Here, you are expected to calculate the group-wise average for Males and Females. As discussed, implementing reduceByKey() directly will not result in a correct answer as average is not a commutative function. So, you can use the groupByKey() function to first club all the values together and then, calculate the sum and count of elements using the map() function.
+
+rdd=file2.map(lambda x:x.split(",")).map(lambda y:(y[1], float(y[6]))).groupByKey()
+
+#calculate the average as follows:
+rdd.map(lambda x: sum(x[1])/len(x[1])).collect()
+
+
+Nonsmoker
+
+Feedback :
+It can be computed using map() and reduceByKey() transformations on a paired RDD between the columns - smoker and charges. Also, it is reflected by the data that it is easier for nonsmokers to get their claims cleared by the insurance companies.
+
+rdd2=rdd1.reduceByKey(lambda x:x[0]-x[1])
+rdd2.collect()
+
+
+ lines.flatMap(lambda x: x.split("Apache Software")).count() - lines.count()
+ 
+ 
+ 5559
+
+Feedback :
+There are three tasks that you need to run on lines RDD:
+
+split based on ' ' (space)
+split_rdd = lines.flatMap(lambda x: x.split(" "))
+ 
+
+converting all the words in lowercase or uppercase
+lower_rdd = split_rdd.map(lambda x: x.lower())
+ 
+
+filtering the words which are not in stopwords
+stopwords = ['a', 'the', 'or', 'on', 'of', 'at', 'for', 'then', 'there', 'it', 'he', 'she', 'me', 'them', 'we', 'i', 'us', 'me' ]
+filtered_rdd = lower_rdd.filter(lambda x:x not in stopwords)
+ 
+
+count the number of words
+filtered_rdd.count()
+
+Partitioning
+Which of the following outputs is correct for the given RDD transformation?
+rdd=sc.parallelize([1,2,3,4,5,6,7,8,9,10],3)
+
+
+Transformation : rdd.coalesce(2,True).collect()
+Output: [1,2,3,7,8,9,10,4,5,6]
+
+Feedback :
+Coalesce shuffles data according to the existing partitions.
+
+Correct
+
+rdd.repartition(2).glom().collect()
+Output: [1,2,3,7,8,9,10,4,5,6]
+
+
+rdd.repartition(2).glom().collect()
+Output: [[1, 2, 3, 7, 8, 9, 10], [4, 5, 6]]
+
+Feedback :
+Repartition first shuffles the data and then repartitions it.
+
+Correct
+
+Transformation : rdd.coalesce(2,True).collect()
+Output: [[1, 2, 3, 7, 8, 9, 10], [4, 5, 6]]
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+https://towardsdatascience.com/demystify-hadoop-data-formats-avro-orc-and-parquet-e428709cf3bb?gi=101f75486048#:~:text=ORC%20is%20a%20row%20columnar,initiative%20to%20speed%20up%20Hive.&text=Parquet%20files%20consist%20of%20row,same%20columns%20are%20stored%20together
+.
+CREATE TABLE istari (
+  name STRING,
+  color STRING
+) ;
+
+
+
+
+CREATE TABLE istari_parquet(
+  name STRING,
+  color STRING
+) STORED AS PARQUET;
+
+insert into istari_parquet
+select * from istari;
+
+
+istari_parquet---> HDFS folder
+
+hdfs dfs -get <hadoop> <linux>
+
+winscp
+
+
+===================
+
+textfile ---> parquet_file
+
+CREATE TABLE istari_parquet(
+  name STRING,
+  color STRING
+) STORED AS PARQUET;
+
+insert into istari_parquet
+select * from istari;
+
+
+istari_parquet---> HDFS folder
+
+hdfs dfs -get <hadoop> <linux>
+
+winscp
+
+
+===================
+
+textfile ---> parquet_file
+SPARK
+python
+scala
+java
+
+_______________________________________________________________________________________________________________________
+
+Find the total revenue generated due to the purchases made in October.
+
+
+select sum(price) as Total_Revenue_October from 
+retail_oct_corrected
+where upper(event_type)='PURCHASE'
+;
+
+select sum(price) as Total_Revenue_October from 
+retail_oct_parquet
+where upper(event_type)='PURCHASE'
+;
+
+
+select sum(price) as Total_Revenue_October from 
+dyn_part_clus_retail_oct
+where upper(event_type)='PURCHASE'
+;
+
+
+
+
+
+------
+
+Write a query to yield the total sum of purchases per month in a single output. 
+
+
+select 'October' as month, sum(price) as Total_Revenue from 
+dyn_part_clus_retail_oct
+where upper(event_type)='PURCHASE'
+
+union
+
+select 'November' as month, sum(price) as Total_Revenue from 
+dyn_part_clus_retail_nov
+where upper(event_type)='PURCHASE'
+;
+
+
+------
+
+Write a query to find the change in the revenue generated due to purchases made from October to November.
+
+select ((b.revenue_nov- a.revenue_oct)/ (a.revenue_oct))*100 as change_in_revenue
+from
+(
+select 'Map' as key, sum(price) as revenue_oct from 
+dyn_part_clus_retail_oct
+where upper(event_type)='PURCHASE'
+)a
+inner join
+(
+select 'Map' as key, sum(price) as revenue_nov from 
+dyn_part_clus_retail_nov
+where upper(event_type)='PURCHASE'
+)b
+on a.key=b.key
+;
+
+
+-----
+
+Find distinct categories of products.
+
+select count(distinct(x.category_id))
+from
+(
+select category_id from dyn_part_clus_retail_oct
+union
+select category_id from dyn_part_clus_retail_nov
+)x
+;
+
+
+----
+
+Find the total number of products available under each category. 
+
+select x.category_id, count(distinct x.product_id)
+from 
+(
+select category_id, product_id from dyn_part_clus_retail_oct
+union
+select category_id, product_id from dyn_part_clus_retail_nov
+)x
+group by x.category_id
+;
+
+
+-----
+
+
+Which brand had the maximum sales in October and November combined?
+
+select x.brand, sum(x.price_add) as sales
+from
+(
+select brand, sum(price) as price_add
+from dyn_part_clus_retail_oct 
+where upper(event_type)='PURCHASE' and brand is not null and trim(brand) !=''
+group by brand
+union
+select brand, sum(price) as price_add
+from dyn_part_clus_retail_nov 
+where upper(event_type)='PURCHASE' and brand is not null and trim(brand) !=''
+group by brand
+)x
+group by x.brand
+order by sales desc
+limit 1
+;
+
+----
+
+
+Which brands increased their sales from October to November?
+
+
+select x.brand
+from
+(
+select a.brand, a.Total_sales_October, b.Total_sales_November
+from
+(
+(
+select brand, sum(price) as Total_sales_October from 
+dyn_part_clus_retail_oct
+where upper(event_type)='PURCHASE' and brand is not null and trim(brand) !=''
+group by brand
+)a
+inner join
+(
+select brand, sum(price) as Total_sales_November from 
+dyn_part_clus_retail_nov
+where upper(event_type)='PURCHASE' and brand is not null and trim(brand) !=''
+group by brand
+)b
+on a.brand=b.brand
+)
+)x
+where (x.Total_sales_November - x.Total_sales_October)>0 ;
+
+
+
+
+----
+
+Your company wants to reward the top 10 users of its website with a Golden Customer plan. Write a query to generate a list of top 10 users who spend the most on purchases.
+
+
+
+select x.user_id, sum(x.price_add) as user_spending
+from
+(
+select user_id, sum(price) as price_add
+from dyn_part_clus_retail_oct
+where upper(event_type)='PURCHASE'
+group by user_id
+union
+select user_id, sum(price) as price_add
+from dyn_part_clus_retail_nov
+where upper(event_type)='PURCHASE'
+group by user_id
+)x
+group by x.user_id 
+order by user_spending desc
+limit 10
+;
+
+_____________________________________________________________________________________________________________________
+
+
+
+
+ssh -i csd_pair.pem hadoop@ec2-3-87-109-178.compute-1.amazonaws.com
+
+wget https://e-commerce-events-ml.s3.amazonaws.com/2019-Oct.csv
+wget https://e-commerce-events-ml.s3.amazonaws.com/2019-Nov.csv
+
+
+create table retail_oct
+(
+event_time string,
+event_type string,
+product_id string,
+category_id string,
+category_code string,
+brand string,
+price float,
+user_id bigint,
+user_session string
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+lines terminated by '\n'
+tblproperties("skip.header.line.count"="1")
+; 
+
+
+
+
+create table retail_nov
+(
+event_time string,
+event_type string,
+product_id string,
+category_id string,
+category_code string,
+brand string,
+price float,
+user_id bigint,
+user_session string
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+lines terminated by '\n'
+tblproperties("skip.header.line.count"="1")
+; 
+
+
+load data local inpath '/home/hadoop/2019-Oct.csv' into table retail_oct;
+
+
+load data local inpath '/home/hadoop/2019-Nov.csv' into table retail_nov;
+
+
+create table retail_oct_corrected(
+event_time timestamp,
+event_type string,
+product_id string,
+category_id string,
+category_code string,
+brand string,
+price float,
+user_id bigint,
+user_session string);
+
+insert into table retail_oct_corrected select from_unixtime(unix_timestamp(event_time, 'yyyy-MM-dd HH:mm:ss')), event_type,product_id,category_id, category_code, brand, price,user_id,user_session from retail_oct;
+
+
+create table retail_nov_corrected(
+event_time timestamp,
+event_type string,
+product_id string,
+category_id string,
+category_code string,
+brand string,
+price float,
+user_id bigint,
+user_session string);
+
+insert into table retail_nov_corrected select from_unixtime(unix_timestamp(event_time, 'yyyy-MM-dd HH:mm:ss')), event_type,product_id,category_id, category_code, brand, price,user_id,user_session from retail_nov;
+
+
+################  Now parquet 
+
+
+
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.max.dynamic.partitions=2000;
+SET hive.exec.max.dynamic.partitions.pernode=500;
+
+
+######
+
+
+create table retail_oct_parquet
+(event_time timestamp,
+event_type string,
+product_id string,
+category_id string,
+category_code string,
+brand string,
+price float,
+user_id bigint,
+user_session string) stored as parquet;
+
+insert into retail_oct_parquet select * from retail_oct_corrected;
+
+
+
+create table retail_nov_parquet
+(event_time timestamp,
+event_type string,
+product_id string,
+category_id string,
+category_code string,
+brand string,
+price float,
+user_id bigint,
+user_session string) stored as parquet;
+
+insert into retail_nov_parquet select * from retail_nov_corrected;
+
+
+
+
+
+
+create table dyn_part_clus_retail_oct(event_time timestamp,product_id string,category_id string,category_code  string,brand  string,price  float,user_id  string,user_session  string) partitioned by (event_type string) clustered by (category_id) into 20 buckets row format delimited fields terminated by '|' lines terminated by '\n' tblproperties("skip.header.line.count"="1") ;
+insert into table dyn_part_clus_retail_oct partition (event_type) select event_time,product_id,category_id,category_code,brand,price,user_id,user_session, event_type from retail_oct_parquet;
+
+
+
+create table dyn_part_clus_retail_nov(event_time timestamp,product_id string,category_id string,category_code  string,brand  string,price  float,user_id  string,user_session  string) partitioned by (event_type string) clustered by (category_id) into 20 buckets row format delimited fields terminated by '|' lines terminated by '\n' tblproperties("skip.header.line.count"="1") ;
+insert into table dyn_part_clus_retail_nov partition (event_type) select event_time,product_id,category_id,category_code,brand,price,user_id,user_session, event_type from retail_nov_parquet;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+create table dyn_part_retail_oct(event_time string,product_id string,category_id string,category_code  string,brand  string,price  float,user_id  string,user_session  string) partitioned by (event_type string) row format delimited fields terminated by '|' lines terminated by '\n' tblproperties("skip.header.line.count"="1");
+insert into table dyn_part_retail_oct partition (event_type) select event_time,product_id,category_id,category_code,brand,price,user_id,user_session, event_type from retail_oct;
+
+
+create table dyn_part_retail_nov(event_time string,product_id string,category_id string,category_code  string,brand  string,price  float,user_id  string,user_session  string) partitioned by (event_type string) row format delimited fields terminated by '|' lines terminated by '\n' tblproperties("skip.header.line.count"="1");
+insert into table dyn_part_retail_nov partition (event_type) select event_time,product_id,category_id,category_code,brand,price,user_id,user_session, event_type from retail_nov;
+
+
+___________________________________________________________________________________________________________________________
+
+
+https://e-commerce-events-ml.s3.amazonaws.com/2019-Oct.csv
+https://e-commerce-events-ml.s3.amazonaws.com/2019-Nov.csv
+
+
+To view the list of services running in the cluster, you can use the following command:
+
+ssh -i csd_pair.pem hadoop@ec2-54-152-57-142.compute-1.amazonaws.com
+
+wget https://e-commerce-events-ml.s3.amazonaws.com/2019-Oct.csv
+wget https://e-commerce-events-ml.s3.amazonaws.com/2019-Nov.csv
+
+
+
+To connect to the RDS instance from your EMR cluster, run the following command:
+
+mysql -h assignment.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
+
+
+create table retail_oct
+(
+event_time varchar(255),
+event_type varchar(255),
+product_id varchar(255),
+category_id	 varchar(255),
+category_code  varchar(255),
+brand  varchar(255),
+price  float,
+user_id  bigint,
+user_session  varchar(255)
+);
+
+create table retail_nov
+(
+event_time varchar(255),
+event_type varchar(255),
+product_id varchar(255),
+category_id	 varchar(255),
+category_code  varchar(255),
+brand  varchar(255),
+price  float,
+user_id  bigint,
+user_session  varchar(255)
+);
+
+load data local infile '/home/hadoop/2019-Oct.csv' into table retail_oct fields terminated by ',' lines terminated by '\n' ignore 1 rows;
+load data local infile '/home/hadoop/2019-Nov.csv' into table retail_nov fields terminated by ',' lines terminated by '\n' ignore 1 rows;
+
+
+
+sqoop import --connect jdbc:mysql://assignment.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com:3306/assignment --table retail_oct --target-dir /user/hadoop/assignment/retail_oct/ --username admin -P -m 1
+sqoop import --connect jdbc:mysql://assignment.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com:3306/assignment --table retail_nov --target-dir /user/hadoop/assignment/retail_nov/ --username admin -P -m 1
+
+
+
+hadoop fs -ls /user/hadoop/assignment/retail_oct
+hadoop fs -ls /user/hadoop/assignment/retail_nov
+
+
+
+with 4 mappers
+
+sqoop import --connect jdbc:mysql://assignment.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com:3306/assignment --table retail_oct --target-dir /user/hadoop/assignment/retail_oct/ --username admin -P -m 4 --split-by year_of_birth
+
+sqoop import --connect jdbc:mysql://assignment.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com:3306/assignment --table retail_oct --target-dir /user/hadoop/assignment/retail_oct/ --username admin -P -m 4 --split-by year_of_birth --where 'gender="male"'
+
+enter hive--
+hive
+
+The command used for connecting with Beeline is shown below:
+
+beeline -u jdbc:hive2://localhost:10000/default -n hadoop
+
+
+
+create hive table--
+
+create table retail_oct_stg
+(
+event_time string,
+event_type string,
+product_id string,
+category_id string,
+category_code string,
+brand string,
+price float,
+user_id string,
+user_session string
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+store as textfile
+;
+
+
+load data inpath '/user/hadoop/assignment/retail_oct' into table retail_oct_stg;
+
+create table retail_nov_stg
+(
+event_time string,
+event_type string,
+product_id string,
+category_id	 string,
+category_code  string,
+brand  string,
+price  float,
+user_id  string,
+user_session  string
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+;
+
+
+load data inpath '/user/hadoop/assignment/retail_nov' into table retail_nov_stg;
+
+
+
+
+loading data in avo format--
+
+sqoop import -Dmapreduce.job.user.classpath.first=true -Dhadoop.security.credential.provider.path=jceks://x.jceks --connect jdbc:mysql://assignment.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com:3306/assignment --table retail_oct --target-dir /user/hadoop/telco/retail_oct_avro -m 1 --username admin -P --as-avrodatafile
+
+
+
+create table dyn_part_retail_oct_stg(event_time string,product_id string,category_id string,category_code  string,brand  string,price  float,user_id  string,user_session  string) partitioned by (event_type string) row format delimited fields terminated by '|' lines terminated by '\n' ;
+insert into table dyn_part_retail_oct_stg partition (event_type) select event_time,product_id,category_id,category_code,brand,price,user_id,user_session, event_type from retail_oct_stg;
+
+
+create table dyn_part_clus_retail_oct_stg(event_time string,product_id string,category_id string,category_code  string,brand  string,price  float,user_id  string,user_session  string) partitioned by (event_type string) clustered by (category_id) into 10 buckets row format delimited fields terminated by '|' lines terminated by '\n' stored as textfile ;
+insert into table dyn_part_clus_retail_oct_stg partition (event_type) select event_time,product_id,category_id,category_code,brand,price,user_id,user_session, event_type from retail_oct_stg;
+
+
+create table dyn_part_retail_nov_stg(event_time string,product_id string,category_id string,category_code  string,brand  string,price  float,user_id  string,user_session  string) partitioned by (event_type string) row format delimited fields terminated by '|' lines terminated by '\n' ;
+insert into table dyn_part_retail_nov_stg partition (event_type) select event_time,product_id,category_id,category_code,brand,price,user_id,user_session,event_type from retail_nov_stg;
+
+create table dyn_part_clus_retail_nov_stg(event_time string,product_id string,category_id string,category_code  string,brand  string,price  float,user_id  string,user_session  string) partitioned by (event_type string) clustered by (category_id) into 10 buckets row format delimited fields terminated by '|' lines terminated by '\n' stored as textfile ;
+insert into table dyn_part_clus_retail_nov_stg partition (event_type) select event_time,product_id,category_id,category_code,brand,price,user_id,user_session,event_type from retail_nov_stg;
+
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+
+
+--------------------
+
+
+
+__________________________________________________________________________________________________________________
+
+
+
+vpc-037553ec0a789fbd5
+ "SubnetId": "subnet-05d818d4f5c3d2047",
+ "SubnetId": "subnet-0ab96c00b396875c1"
+ "InternetGatewayId": "igw-0b89250bc7ab605aa",
+ "RouteTableId": "rtb-0dc7a07299f767dfb",
+ 
+ "GroupId": "sg-02608af5e7227ae1c"
+ 
+ 14.102.188.115
+ 
+ AMI ID- ami-0323c3dd2da7fb37d
+ 
+  "InstanceId": "i-0409530ff7fe52ed3",
+  
+  
+  
+
+Chandrabhan Singh
+a day ago
+flag
+If the EC2 instance was created earlier and you trying to connect to it later, the possibility is that due to restart of your machine your IP address got changed. You must update your IP in the rules defined in the security group you have created earlier.
+
+ 
+
+Also, check if the public IP of the EC2 instance is still the same.
+
+ 
+
+ 14.102.188.115
+ 
+   "InstanceId": "i-0fb95ce9891f9f01e",
+   
+    "PublicIpAddress": "52.91.148.32",
+
+A restart of your PC will always change your IP and hence you must update your EC2 instance's security group as well
+
+https://www.ip2location.com/demo
+
+ssh -i keypair2.pem ec2-user@52.91.148.32
+
+http://localhost:8888/?token=b93875ae4f638ace91043d9c31e18d9422f3f4a7b96cb1db
+
+
+ssh -i "keypair2.pem" -N -f -L 8888:localhost:8888 ec2-user@52.91.148.32
+
+
+
+
+ "Arn": "arn:aws:iam::007547392535:role/csdrole",
+
+ 
+  
+aws iam attach-role-policy --role-name csdrole --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+aws iam attach-role-policy --role-name csdrole --policy-arn arn:aws:iam::aws:policy/AWSLambdaFullAccess
+
+aws iam create-instance-profile --instance-profile-name csdinstanceprofile
+aws iam add-role-to-instance-profile --role-name csdrole --instance-profile-name csdinstanceprofile
+ 
+ 
+aws ec2 create-security-group --group-name csdjupyteraccess --description "Access for jupyter and ssh"
+
+"GroupId": "sg-0e0a8afc3e3eecdd2"
+
+aws ec2 authorize-security-group-ingress --group-id sg-0e0a8afc3e3eecdd2 --protocol tcp --port 22 --cidr 14.102.188.115/32
+aws ec2 authorize-security-group-ingress --group-id sg-0e0a8afc3e3eecdd2 --protocol tcp --port 8888 --cidr 14.102.188.115/32
+ 
+ 
+ 
+ 
+ 
+ aws ec2 create-key-pair --key-name csd_pair --query "KeyMaterial" --outputtext > csd_pair.pem
+ 
+aws ec2 run-instances --image-id ami-0323c3dd2da7fb37d --count 1 --instance-type t2.micro --key-name csd_pair --security-group-ids sg-0e0a8afc3e3eecdd2 --iam-instance-profile Name=csdinstanceprofile
+
+ aws ec2 describe-instances --instance-id i-095e59f6d3ae0a96d
+ "PublicDnsName": "ec2-54-164-108-226.compute-1.amazonaws.com",
+ 
+ ssh -i "csd_pair.pem" ec2-user@ec2-54-164-108-226.compute-1.amazonaws.com
+
+
+  "PublicDnsName": "ec2-54-164-108-226.compute-1.amazonaws.com",
+                    "PublicIpAddress": "54.164.108.226",
+ 
+ aws rds create-db-instance --engine mysql --db-name celebrities --db-instance-class db.t2.micro --allocated-storage 20 --db-instance-identifier test-instance --master-username master --master-user-password casestudy \
+
+  "MasterUsername": "master",
+        "DBName": "celebrities",
+		password= casestudy123
+		
+ "DBName": "celebrities",
+            "Endpoint": {
+                "Address": "test-instance.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com",
+                "Port": 3306,
+                "HostedZoneId": "Z2R2ITUGPM61AM"
+	"VpcSecurityGroupId": "sg-219cc22a",
+ 
+aws ec2 authorize-security-group-ingress --group-id sg-219cc22a --protocol tcp --port 3306 --cidr 172.31.88.39
+ 
+ 
+ import boto3
+import json
+def lambda_handler(event, context):
+    client =boto3.client('rekognition')
+    response=client.recognize_celebrities(Image={'S3Object':{'Bucket':event['bucket'],'Name':event['object_name']}}
+    return(response['CelebrityFaces'][0]['Name'])
+ 
+ 
+Lambda----
+ 
+{
+"Version": "2012-10-17",
+"Statement": [
+{
+"Effect": "Allow",
+"Principal": {
+"Service": "lambda.amazonaws.com"
+},
+"Action": "sts:AssumeRole",
+"Condition": {}
+}
+]
+}
+
+ aws iam create-role --role-name csdlambdarole --assume-role-policy-document file://lambda_role.json
+ 
+ 
+
+
+aws iam attach-role-policy --role-name csdlambdarole --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+aws iam attach-role-policy --role-name csdlambdarole --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
+
+aws iam get-role --role-name csdlambdarole
+   "Arn": "arn:aws:iam::007547392535:role/csdlambdarole",
+   
+   
+aws ec2 describe-instances --instance-id i-095e59f6d3ae0a96d
+
+
+____________________________02_16_2021
+
+
+52.91.190.38 
+
+    "PublicDnsName": "ec2-52-91-190-38.compute-1.amazonaws.com",
+                    "PublicIpAddress": "52.91.190.38",
+
+ssh -i "csd_pair.pem" ec2-user@ec2-52-91-190-38.compute-1.amazonaws.com
+
+
+aws iam attach-role-policy --role-name csdlambdarole --policy-arn arn:aws:iam::aws:policy/ComprehendFullAccess
+
+aws iam attach-role-policy --role-name csdrole --policy-arn arn:aws:iam::aws:policy/ComprehendFullAccess
+
+
+34.205.143.109
+ssh -i "csd_pair.pem" ec2-user@ec2-34-205-143-109.compute-1.amazonaws.com
+
+
+--- 02_23_2021
+
+ssh -i "csd_pair.pem" ec2-user@ec2-54-91-146-249.compute-1.amazonaws.com
+
+52.91.85.239
+aws ec2 describe-instances --instance-id i-095e59f6d3ae0a96d
+
+54.91.146.249
+
+
+--
+
+aws rds create-db-instance --engine mysql --db-name stack_overflow --db-instance-class db.t2.micro --allocated-storage 20 --db-instance-identifier test-instance --master-username master --master-user-password casestudy123
+
+  "MasterUsername": "master",
+        "DBName": "celebrities",
+		password= casestudy123
+		
+ "DBName": "celebrities",
+            "Endpoint": {
+                "Address": "test-instance.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com",
+                "Port": 3306,
+                "HostedZoneId": "Z2R2ITUGPM61AM"
+	"VpcSecurityGroupId": "sg-219cc22a",
+ 
+aws ec2 authorize-security-group-ingress --group-id sg-219cc22a --protocol tcp --port 3306 --cidr 172.31.88.39
+ 
+Data base name- stack_overflow
+usename- master
+password- casestudy123
+
+
+           "MasterUsername": "master",
+            "DBName": "stack_overflow",
+            "Endpoint": {
+                "Address": "test-instance.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com",
+                "Port": 3306,
+                "HostedZoneId": "Z2R2ITUGPM61AM"
+				
+				VpcSecurityGroupId": "sg-219cc22a",
+				
+aws ec2 authorize-security-group-ingress --group-id sg-219cc22a --protocol tcp --port 3306 --cidr 54.91.146.249
+
+aws ec2 authorize-security-group-ingress --group-id sg-219cc22a --protocol tcp --port 3306 --cidr 172.31.88.39
+ 
+14.102.188.115
+
+
+
+import mysql.connector
+
+dbc = mysql.connector.connect(
+    host="test-instance.cmz8dmcjzwdb.us-east-1.rds.amazonaws.com",
+    user="master",
+    passwd="casestudy123",
+    port=3306,
+    db='stack_overflow'
+    
+)
+
+
+cur = dbc.cursor()
+#cur.execute("DROP TABLE objective_2_table")
+cur.execute("CREATE TABLE objective_2_table(qsn_year VARCHAR(255), mean VARCHAR(255), median VARCHAR(255), Respective_Tag VARCHAR(255))")
+
+sql='INSERT INTO objective_2_table(qsn_year,mean,median,Respective_Tag) VALUES (%s,%s,%s,%s)'
+
+for i in range(0,len(Time_to_ansr_final_data)):
+    val1=Time_to_ansr_final_data['qsn_year'].iloc[i]
+    val2=Time_to_ansr_final_data['mean'].iloc[i]
+    val3=Time_to_ansr_final_data['median'].iloc[i]
+    val4=Time_to_ansr_final_data['Respective_Tag'].iloc[i]
+    val=(val1,val2,val3,val4)
+    
+    cur.execute(sql,val)
+	
+	
+cur.execute("SELECT * from objective_2_table limit 10")
+result=cur.fetchall()
+print(result)
+
+
+-- emr
+
+ssh -i csd_pair.pem hadoop@ec2-18-209-165-113.compute-1.amazonaws.com
+
+____________________________________________________________________________________________________________
+
+Program Overview
+Apart from the preparatory course in Python programming and data visualisation that you have gone through, we have structured this program into 7 courses that you will learn for the next 12 months.
+
+A brief overview of the contents of these courses is covered below. 
+
+
+Course 1:  Introduction to Machine Learning and Cloud
+The first-course module gives an introduction to Machine Learning and Cloud. A very basic understanding of Machine learning and various types of machine learning models and understanding of cloud will be part of this module. The assignment at the end of the course module will test knowledge of handling cloud services and building solutions which are scalable.
+
+
+Course 2: Data Warehousing and Data Management
+
+Big Data Concepts are built in the second course. The architecture of Hadoop File Systems and Map-reduce programming is built in this module. Also, the basics of SQL and Hive programming will be introduced with an industry case study of big data processing.
+
+
+Course 3: Big data processing using Spark
+
+The third course will introduce spark programming architecture in depth. In-memory processing for large scale data processing is introduced in-depth in the module. The material forms the basis for the machine learning models using SparkSpark ml-lib covered in the subsequent module.
+
+Courses 4 and 5: Machine Learning Models
+These courses, besides introducing machine learning models in-depth, also connect building machine learning models at scale using big data processing using Spark. The last course module on the deployment of machine learning models will deal with various cloud computing tools for building a machine learning pipeline along with some industry case studies.
+
+ 
+
+Course 6: Deep Learning
+
+This course introduces to the realm of deep learning where you will be learning the basics of Neural Networks and various concepts related to Deep Neural Network. You will also look at the basics of natural language processing that plays a very vital role in today’s era because of the sheer volume of text data that users generate around the world.
+
+
+Course 7: Deployment of Machine Learning Models
+
+The final part of the course module deals with a project work relevant to an industry case study building practical machine learning models using public clouds.
+ 
+
+The curriculum covered in this program for 12 months has the estimated breakup in the number of weeks, as shown below:
+
+ 
+
+Course	Name of the Course	Estimated Duration
+1	Introduction to Machine Learning & Cloud	5 weeks
+2	Data Warehousing and Data Management	5 weeks
+3	Big Data Processing using Spark	5 weeks
+4	Machine Learning Models - 1	6 weeks
+5	Machine Learning Models - 2	8 weeks
+6	Deep Learning	12 weeks
+7	Deployment of Machine Learning Models	2 weeks
+ 
+
+Each session will involve certain multiple-choice questions and subjective questions that the learners have to answer. Along with that, there will be industrial case studies that the learners will get to do at the end of each course.
+
+After the 7th course, there will be a capstone project that will go for an estimated duration of 4 weeks.
+
+____________________________________________________________________________________________________
+
+
+Being an Electrical Engineer, I never thought of working in any other field except core jobs. Somehow, I decided to take a detour out of curiosity for new things and secured myself an analytical role fresh out of college. Since then, I never looked back, got so hooked up with the ML projects and always tried to professionally up-skill myself so that I am equipped enough to deliver and make meaningful impact by supporting and improving business outcomes. 
+1.5 years working as Data Scientist at Ericsson, mainly working in developing predictive model to improve business outcomes.
+
+
+2.3 years working as Associate Data Scientist at UHG, as a part of Advanced Research & Analytics team, mainly working in developing predictive model and forecasts to support business.
+
+
+import ast,sys
+input_str = sys.stdin.read()
+input_list = ast.literal_eval(input_str)
+from functools import reduce
+
+answer = reduce(lambda x,y: x if x>y else y,input_list )
+
+print(answer)
+
+
+## for reading input reference
+
+
+#take input here
+import ast 
+input_list=ast.literal_eval(input())
+m=int(input())
+n=int(input())
+
+import numpy as np
+array_1 = #start writing your code from here
+final_array = #start writing your code from here
+
+print(final_array)
+
+[ 1, 5, 9, 12, 15, 7, 12, 9 ]
+6
+12
+
+check how to sort dict basis the value-- doubty still......
+
+
+# Read the variable from STDIN
+n = int(input())
+
+import numpy as np
+
+arr1=np.ones((n,n),dtype='int')
+arr1[1:-1,1:-1]=0
+
+print(arr1)
+
+
+import numpy as np 
+
+# Given array
+a = np.array([[4, 3, 1], [5, 7, 0], [9, 9, 3], [8, 2, 4]])
+
+# Read the values of m and n
+import sys
+lines = sys.stdin.readlines()
+m = int(lines[0])
+n = int(lines[1])
+
+# Write your code for swapping here
+
+# Print the array after swapping
+print(a)
+
+import numpy as np 
+
+# Given array
+a = np.array([[4, 3, 1], [5, 7, 0], [9, 9, 3], [8, 2, 4]])
+
+# Read the values of m and n
+import sys
+lines = sys.stdin.readlines()
+m = int(lines[0])
+n = int(lines[1])
+
+# Swap the mth and nth row using indexing. Notice, the rows have been individually
+# passed as a list and the columns index is left empty indicating that all columns
+# should be selected. 
+a[[m,n]] = a[[n,m]]
+
+# Print the array after swapping
+print(a)
+
+
+# Read the variable from STDIN
+n = int(input())
+
+import numpy as np
+
+def printcheckboard(n): 
+    final = [] 
+    for i in range(n): 
+        final.append(list(np.tile([0,1],int(n/2))) if i%2==0 else list(np.tile([1,0],int(n/2)))) 
+    print(np.array(final)) 
+printcheckboard(n)
+
+# For a video solution of the code, copy-paste the following link in your browser:
+# https://youtu.be/cak6Y6yN4AU
+
+# Read the variable from STDIN
+n = int(input())
+
+import numpy as np
+
+# Create the smallest unit of a checkerboard matrix
+x = np.array([[0, 1], [1, 0]])
+
+# Create a checkerboard matrix of size n*n using the tile() function. We use n//2 
+# since the smallest unit of a checkerboard matrix is already of size 2*2. So, for 
+# creating a larger matrix, say, of size 8, we need to replicate it using the tile()
+# function 4 times as it will then give a matrix of size 8*8.
+check = np.tile(x, (n//2, n//2))
+
+# Print the created matrix
+print(check)
+
+
+You can create an 11 x 12 array using np.array(range(1, 11*12+1)). You can reshape it to an (11 x 12) array and then check the position of 100. Be clear that the indexing starts from 0; hence, the 9th row will have the index 8.
+Alternatively, you can also use np.unravel_index(99, (11,12)) on the created array.
+
+
+
+** IMP
+
+
+You should be careful when using the function plt.plot. The same function generates a scatterplot if you tweak the syntax and specify the markers. Try to run the code below to understand the difference:
+
+ 
+
+y = np.random.randint(1,100, 50)
+plt.plot(y, 'ro') # ‘ro’ represents color (r) and marker (o)
+(if you are getting an error, check the quotation marks)
+
+ 
+
+If you specify the colour and marker separately, then you will get a line plot with the points marked. Try using the code provided below:
+
+plt.plot(y, 'red', marker = 'o')
+
+
+import numpy as np
+import pandas as pd
+df = pd.read_csv('https://query.data.world/s/vBDCsoHCytUSLKkLvq851k2b8JOCkF')
+df_1 = df.pivot_table(index = ['month','day'], 
+                      values = ['rain','wind'], 
+                      aggfunc = 'mean') 
+print(df_1.head(20))
+
+___________________________________________________________________________________________________________________
+
+
+from sqlalchemy import create_engine
+import urllib
+
+def database_update(dbname, Finalup):
+    quoted = urllib.parse.quote_plus(
+        "DRIVER={SQL Server};SERVER=172.29.31.53,63678;DATABASE="+dbname+";SCHEMA=dbo;trusted_connection=YES;")
+    engine = create_engine(
+        'mssql+pyodbc:///?odbc_connect={}'.format(quoted), fast_executemany=True)
+    start = time.time()
+    print('Writing Database')
+    Finalup.to_sql('Ifleet_table6', schema='dbo', index=False,
+                   if_exists='append', chunksize=10000, con=engine)
+    print('Database_updated')
+    return
+    
+    ________________________________________________________________________
+    
+    --sentiment
+
+
+# Import the required packages
+from textblob import TextBlob
+
+# Create a textblob object  
+blob_two_cities = TextBlob(two_cities)
+
+# Print out the sentiment 
+print(blob_two_cities.sentiment)
+
+--comparing sentiment of two strings
+
+# Import the required packages
+from textblob import TextBlob
+
+# Create a textblob object 
+blob_annak = TextBlob(annak)
+blob_catcher = TextBlob(catcher)
+
+# Print out the sentiment   
+print('Sentiment of annak: ', blob_annak.sentiment)
+print('Sentiment of catcher: ', blob_catcher.sentiment)
+
+--wordcloud
+
+from wordcloud import WordCloud
+
+# Generate the word cloud from the east_of_eden string
+cloud_east_of_eden = WordCloud(background_color="white").generate(east_of_eden)
+
+--plot
+
+# Generate the word cloud from the east_of_eden string
+cloud_east_of_eden = WordCloud(background_color="white").generate(east_of_eden)
+
+# Create a figure of the generated cloud
+plt.imshow(cloud_east_of_eden, interpolation='bilinear')  
+plt.axis('off')
+# Display the figure
+plt.show()
+
+
+-- # Import the word cloud function  
+from wordcloud import WordCloud
+
+# Create and generate a word cloud image 
+my_cloud = WordCloud(background_color='white', stopwords=my_stopwords).generate(descriptions)
+
+# Display the generated wordcloud image
+plt.imshow(my_cloud, interpolation='bilinear') 
+plt.axis("off")
+
+# Don't forget to show the final image
+plt.show()
+
+_________________________________________________________________
+
+# Import the necessary modules
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+
+# Print the head of df
+print(df.head())
+
+# Create a series to store the labels: y
+y = df.label
+
+# Create training and test sets
+X_train, X_test, y_train, y_test = train_test_split(df['text'],y, test_size =0.33, random_state=53)
+
+# Initialize a CountVectorizer object: count_vectorizer
+count_vectorizer = CountVectorizer(stop_words='english')
+
+# Transform the training data using only the 'text' column values: count_train 
+count_train = count_vectorizer.fit_transform(X_train)
+
+# Transform the test data using only the 'text' column values: count_test 
+count_test = count_vectorizer.transform(X_test)
+
+# Print the first 10 features of the count_vectorizer
+print(count_vectorizer.get_feature_names()[:10])
+
+
+
+# Create the CountVectorizer DataFrame: count_df
+count_df = pd.DataFrame(count_train.A, columns=count_vectorizer.get_feature_names())
+
+# Create the TfidfVectorizer DataFrame: tfidf_df
+tfidf_df = pd.DataFrame(tfidf_train.A, columns= tfidf_vectorizer.get_feature_names())
+
+# Print the head of count_df
+print(count_df.head())
+
+# Print the head of tfidf_df
+print(tfidf_df.head())
+
+# Calculate the difference in columns: difference
+difference = set(count_df.columns) - set(tfidf_df.columns)
+print(difference)
+
+# Check whether the DataFrames are equal
+print(count_df.equals(tfidf_df))
+
+
+
+# Get the class labels: class_labels
+class_labels = nb_classifier.classes_
+
+# Extract the features: feature_names
+feature_names = tfidf_vectorizer.get_feature_names()
+
+# Zip the feature names together with the coefficient array and sort by weights: feat_with_weights
+feat_with_weights = sorted(zip(nb_classifier.coef_[0], feature_names))
+
+# Print the first class label and the top 20 feat_with_weights entries
+print(class_labels[0], feat_with_weights[:20])
+
+# Print the second class label and the bottom 20 feat_with_weights entries
+print(class_labels[1], feat_with_weights[-20:])
+
+
+
+
+
+# Import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Initialize a TfidfVectorizer object: tfidf_vectorizer
+tfidf_vectorizer = TfidfVectorizer(stop_words='english',max_df=0.7)
+
+# Transform the training data: tfidf_train 
+tfidf_train = tfidf_vectorizer.fit_transform(X_train)
+
+# Transform the test data: tfidf_test 
+tfidf_test = tfidf_vectorizer.transform(X_test)
+
+# Print the first 10 features
+print(tfidf_vectorizer.get_feature_names()[:10])
+
+# Print the first 5 vectors of the tfidf training data
+print(tfidf_train.A[:5])
+
+
+
+---------------feature creation
+
+# Create a feature char_count
+tweets['char_count'] = tweets['content'].apply(len)
+
+# Print the average character count
+print(tweets['char_count'].mean())
+
+# Function that returns number of words in a string
+def count_words(string):
+	# Split the string into words
+    words = string.split()
+    
+    # Return the number of words
+    return len(words)
+
+# Create a new feature word_count
+ted['word_count'] = ted['transcript'].apply(count_words)
+
+# Print the average word count of the talks
+print(ted['word_count'].mean())
+
+
+# Function that returns number of mentions in a string
+def count_mentions(string):
+	# Split the string into words
+    words = string.split()
+    
+    # Create a list of words that are mentions
+    mentions = [word for word in words if word.startswith('@')]
+    
+    # Return number of mentions
+    return(len(mentions))
+
+# Create a feature mention_count and display distribution
+tweets['mention_count'] = tweets['content'].apply(count_mentions)
+tweets['mention_count'].hist()
+plt.title('Mention count distribution')
+plt.show()
+
+
+--- Readability scores--flesch and gunning fog score
+
+# Import Textatistic
+from textatistic import Textatistic
+
+# Compute the readability scores 
+readability_scores = Textatistic(sisyphus_essay).scores
+
+# Print the flesch reading ease score
+flesch = readability_scores['flesch_score']
+print("The Flesch Reading Ease is %.2f" % (flesch))
+
+----- Tokenization
+import spacy
+
+# Load the en_core_web_sm model
+nlp = spacy.load('en_core_web_sm')
+
+# Create a Doc object
+doc = nlp(gettysburg)
+
+# Generate the tokens
+tokens = [token.text for token in doc]
+print(tokens)
+
+
+---lemmatization
+
+import spacy
+
+# Load the en_core_web_sm model
+nlp = spacy.load('en_core_web_sm')
+
+# Create a Doc object
+doc = nlp(gettysburg)
+
+# Generate lemmas
+lemmas = [token.lemma_ for token in doc]
+
+---- forming string of lemmas
+
+import spacy
+
+# Load the en_core_web_sm model
+nlp = spacy.load('en_core_web_sm')
+
+# Create a Doc object
+doc = nlp(gettysburg)
+
+# Generate lemmas
+lemmas = [token.lemma_ for token in doc]
+
+# Convert lemmas into a string
+print(' '.join(lemmas))
+
+-----cleaning
+
+# Load model and create Doc object
+nlp = spacy.load('en_core_web_sm')
+doc = nlp(blog)
+
+# Generate lemmatized tokens
+lemmas = [token.lemma_ for token in doc]
+
+# Remove stopwords and non-alphabetic tokens
+a_lemmas = [lemma for lemma in lemmas 
+            if lemma.isalpha() and lemma not in stopwords]
+
+# Print string after text cleaning
+print(' '.join(a_lemmas))
+
+
+--cleaning multiple ted talks
+
+# Function to preprocess text
+def preprocess(text):
+  	# Create Doc object
+    doc = nlp(text, disable=['ner', 'parser'])
+    # Generate lemmas
+    lemmas = [token.lemma_ for token in doc]
+    # Remove stopwords and non-alphabetic characters
+    a_lemmas = [lemma for lemma in lemmas 
+            if lemma.isalpha() and lemma not in stopwords]
+    
+    return ' '.join(a_lemmas)
+  
+# Apply preprocess to ted['transcript']
+ted['transcript'] = ted['transcript'].apply(preprocess)
+print(ted['transcript'])
+
+
+---pos tagging
+
+# Load the en_core_web_sm model
+nlp = spacy.load('en_core_web_sm')
+
+# Create a Doc object
+doc = nlp(lotf)
+
+# Generate tokens and pos tags
+pos = [(token.text, token.pos_) for token in doc]
+print(pos)
+
+
+--COUNT PROPER NOUNS
+
+nlp = spacy.load('en_core_web_sm')
+
+# Returns number of proper nouns
+def proper_nouns(text, model=nlp):
+  	# Create doc object
+    doc = model(text)
+    # Generate list of POS tags
+    pos = [token.pos_ for token in doc]
+    
+    # Return number of proper nouns
+    return pos.count('PROPN')
+
+print(proper_nouns("Abdul, Bill and Cathy went to the market to buy apples.", nlp))
+
+
+-----COUNT NOUNS
+nlp = spacy.load('en_core_web_sm')
+
+# Returns number of other nouns
+def nouns(text, model=nlp):
+  	# Create doc object
+    doc = model(text)
+    # Generate list of POS tags
+    pos = [token.pos_ for token in doc]
+    
+    # Return number of other nouns
+    return pos.count('NOUN')
+
+print(nouns("Abdul, Bill and Cathy went to the market to buy apples.", nlp))
+
+
+-----fake and real news noun counts
+
+headlines['num_propn'] = headlines['title'].apply(proper_nouns)
+headlines['num_noun'] = headlines['title'].apply(nouns)
+
+# Compute mean of proper nouns
+real_propn = headlines[headlines['label'] == 'REAL']['num_propn'].mean()
+fake_propn = headlines[headlines['label'] == 'FAKE']['num_propn'].mean()
+
+# Compute mean of other nouns
+real_noun = headlines[headlines['label'] == 'REAL']['num_noun'].mean()
+fake_noun = headlines[headlines['label'] == 'FAKE']['num_noun'].mean()
+
+# Print results
+print("Mean no. of proper nouns in real and fake headlines are %.2f and %.2f respectively"%(real_propn, fake_propn))
+print("Mean no. of other nouns in real and fake headlines are %.2f and %.2f respectively"%(real_noun, fake_noun))
+
+
+---NER
+
+
+# Load the required model
+nlp = spacy.load('en_core_web_sm')
+
+# Create a Doc instance 
+text = 'Sundar Pichai is the CEO of Google. Its headquarters is in Mountain View.'
+doc = nlp(text)
+
+# Print all named entities and their labels
+for ent in doc.ents:
+    print(ent.text, ent.label_)
+	
+	
+	label without _ will give id'd or numbers
+	
+	
+	
+---- identifying people with names
+def find_persons(text):
+  # Create Doc object
+  doc = nlp(text)
+  
+  # Identify the persons
+  persons = [ent.text for ent in doc.ents if ent.label_ == 'PERSON']
+  
+  # Return persons
+  return persons
+
+print(find_persons(tc))
+
+
+
+---BOW
+
+# Import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Create CountVectorizer object
+vectorizer = CountVectorizer()
+
+# Generate matrix of word vectors
+bow_matrix = vectorizer.fit_transform(corpus)
+
+# Print the shape of bow_matrix
+print(bow_matrix.shape)
+
+
+
+---Analyzing dimensionality and analysing
+
+# Import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Create CountVectorizer object
+vectorizer = CountVectorizer()
+
+# Generate matrix of word vectors
+bow_lem_matrix = vectorizer.fit_transform(lem_corpus)
+
+# Print the shape of bow_lem_matrix
+print(bow_lem_matrix.shape)
+
+
+--------Mapping feature indices with feature names
+
+
+# Create CountVectorizer object
+vectorizer = CountVectorizer()
+
+# Generate matrix of word vectors
+bow_matrix = vectorizer.fit_transform(corpus)
+
+# Convert bow_matrix into a DataFrame
+bow_df = pd.DataFrame(bow_matrix.toarray())
+
+# Map the column names to vocabulary 
+bow_df.columns = vectorizer.get_feature_names()
+
+# Print bow_df
+print(bow_df)
+
+----BOW vectors
+
+# Import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Create a CountVectorizer object
+vectorizer = CountVectorizer(lowercase=True, stop_words='english')
+
+# Fit and transform X_train
+X_train_bow = vectorizer.fit_transform(X_train)
+
+# Transform X_test
+X_test_bow = vectorizer.transform(X_test)
+
+# Print shape of X_train_bow and X_test_bow
+print(X_train_bow.shape)
+print(X_test_bow.shape)
+
+
+----predicting sentiment of movie review
+
+# Create a MultinomialNB object
+clf = MultinomialNB()
+
+# Fit the classifier
+clf.fit(X_train_bow, y_train)
+
+# Measure the accuracy
+accuracy = clf.score(X_test_bow, y_test)
+print("The accuracy of the classifier on the test set is %.3f" % accuracy)
+
+# Predict the sentiment of a negative review
+review = "The movie was terrible. The music was underwhelming and the acting mediocre."
+prediction = clf.predict(vectorizer.transform([review]))[0]
+print("The sentiment predicted by the classifier is %i" % (prediction))
+
+
+-=-----N Gram model
+
+
+# Generate n-grams upto n=1
+vectorizer_ng1 = CountVectorizer(ngram_range=(1,1))
+ng1 = vectorizer_ng1.fit_transform(corpus)
+
+# Generate n-grams upto n=2
+vectorizer_ng2 = CountVectorizer(ngram_range=(1,2))
+ng2 = vectorizer_ng2.fit_transform(corpus)
+
+# Generate n-grams upto n=3
+vectorizer_ng3 = CountVectorizer(ngram_range=(1, 3))
+ng3 = vectorizer_ng3.fit_transform(corpus)
+
+# Print the number of features for each model
+print("ng1, ng2 and ng3 have %i, %i and %i features respectively" % (ng1.shape[1], ng2.shape[1], ng3.shape[1]))
+
+
+---model on n grams
+# Define an instance of MultinomialNB 
+clf_ng = MultinomialNB()
+
+# Fit the classifier 
+clf_ng.fit(X_train_ng, y_train)
+
+# Measure the accuracy 
+accuracy = clf_ng.score(X_test_ng,y_test)
+print("The accuracy of the classifier on the test set is %.3f" % accuracy)
+
+# Predict the sentiment of a negative review
+review = "The movie was not good. The plot had several holes and the acting lacked panache."
+prediction = clf_ng.predict(ng_vectorizer.transform([review]))[0]
+print("The sentiment predicted by the classifier is %i" % (prediction))
+
+start_time = time.time()
+# Splitting the data into training and test sets
+train_X, test_X, train_y, test_y = train_test_split(df['review'], df['sentiment'], test_size=0.5, random_state=42, stratify=df['sentiment'])
+
+# Generating ngrams
+vectorizer = CountVectorizer(ngram_range=(1,3))
+train_X = vectorizer.fit_transform(train_X)
+test_X = vectorizer.transform(test_X)
+
+# Fit classifier
+clf = MultinomialNB()
+clf.fit(train_X, train_y)
+
+# Print accuracy, time and number of dimensions
+print("The program took %.3f seconds to complete. The accuracy on the test set is %.2f. The ngram representation had %i features." % (time.time() - start_time, clf.score(test_X, test_y), train_X.shape[1]))
+
+
+---tf idf vectorizer
+
+
+# Import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Create TfidfVectorizer object
+vectorizer = TfidfVectorizer()
+
+# Generate matrix of word vectors
+tfidf_matrix = vectorizer.fit_transform(ted)
+
+# Print the shape of tfidf_matrix
+print(tfidf_matrix.shape)
+
+
+---cosine similarity
+
+
+# Initialize numpy vectors
+A = np.array([1,3])
+B = np.array([-2,2])
+
+# Compute dot product
+dot_prod = np.dot(A, B)
+
+# Print dot product
+print(dot_prod)
+
+
+----
+
+
+
+# Initialize an instance of tf-idf Vectorizer
+tfidf_vectorizer = TfidfVectorizer()
+
+# Generate the tf-idf vectors for the corpus
+tfidf_matrix = tfidf_vectorizer.fit_transform(corpus)
+
+# Compute and print the cosine similarity matrix
+cosine_sim = cosine_similarity(tfidf_matrix,tfidf_matrix)
+print(cosine_sim)
+
+
+---linear kernel and cosine similarity
+
+
+
+# Record start time
+start = time.time()
+
+# Compute cosine similarity matrix
+cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+
+# Print cosine similarity matrix
+print(cosine_sim)
+
+# Print time taken
+print("Time taken: %s seconds" %(time.time() - start))
+
+
+# Record start time
+start = time.time()
+
+# Compute cosine similarity matrix
+cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+
+# Print cosine similarity matrix
+print(cosine_sim)
+
+# Print time taken
+print("Time taken: %s seconds" %(time.time() - start))
+
+
+---Movie recommendation based on similarity in descriptions
+
+
+
+# Initialize the TfidfVectorizer 
+tfidf = TfidfVectorizer(stop_words='english')
+
+# Construct the TF-IDF matrix
+tfidf_matrix = tfidf.fit_transform(movie_plots)
+
+# Generate the cosine similarity matrix
+cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+ 
+# Generate recommendations 
+print(get_recommendations('The Dark Knight Rises', cosine_sim, indices))
+
+
+
+# Generate mapping between titles and index
+indices = pd.Series(metadata.index, index=metadata['title']).drop_duplicates()
+
+def get_recommendations(title, cosine_sim, indices):
+    # Get index of movie that matches title
+    idx = indices[title]
+    # Sort the movies based on the similarity scores
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    # Get the scores for 10 most similar movies
+    sim_scores = sim_scores[1:11]
+    # Get the movie indices
+    movie_indices = [i[0] for i in sim_scores]
+    # Return the top 10 most similar movies
+    return metadata['title'].iloc[movie_indices]
+	
+
+--ted talk recommender
+
+# Initialize the TfidfVectorizer 
+tfidf = TfidfVectorizer(stop_words='english')
+
+# Construct the TF-IDF matrix
+tfidf_matrix = tfidf.fit_transform(transcripts)
+
+# Generate the cosine similarity matrix
+cosine_sim = linear_kernel(tfidf_matrix,tfidf_matrix)
+ 
+# Generate recommendations 
+print(get_recommendations('5 ways to kill your dreams', cosine_sim, indices))
+
+---similarity of words using embeddings
+
+# Create the doc object
+doc = nlp(sent)
+
+# Compute pairwise similarity scores
+for token1 in doc:
+  for token2 in doc:
+    print(token1.text, token2.text, token1.similarity(token2))
+	
+	
+	
+	# Create Doc objects
+mother_doc = nlp(mother)
+hopes_doc = nlp(hopes)
+hey_doc = nlp(hey)
+
+# Print similarity between mother and hopes
+print(mother_doc.similarity(hopes_doc))
+
+# Print similarity between mother and hey
+print(mother_doc.similarity(hey_doc))
+
+
+______________________________________________________________________________
+
+
+# Create a correlation matrix
+corr_metrics = echo_tracks.corr()
+corr_metrics.style.background_gradient()
+
+# Define our features 
+features = echo_tracks.drop(['track_id','genre_top'], axis=1)
+# Define our labels
+labels = echo_tracks['genre_top']
+
+# Import the StandardScaler
+from sklearn.preprocessing import StandardScaler
+
+# Scale the features and set the values to a new variable
+scaler = StandardScaler()
+scaled_train_features =scaler.fit_transform(features)
+
+
+# This is just to make plots appear in the notebook
+%matplotlib inline
+
+# Import our plotting module, and PCA class
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
+# Get our explained variance ratios from PCA using all features
+pca = PCA()
+
+exp_variance=pca.fit(scaled_train_features)
+
+# #plot the explained variance using a barplot
+fig, ax = plt.subplots()
+ax.bar(height=exp_variance.explained_variance_ratio_, x=[1,2,3,4,5,6,7,8])
+# # ?ax.bar
+ax.set_xlabel('Principal Component #')
+
+# Import numpy
+import numpy as np
+
+# Calculate the cumulative explained variance
+cum_exp_variance = np.cumsum(exp_variance.explained_variance_ratio_)
+
+# Plot the cumulative explained variance and draw a dashed line at 0.90.
+fig, ax = plt.subplots()
+ax.plot(cum_exp_variance)
+ax.axhline(y=0.9, linestyle='--')
+n_components = np.where(cum_exp_variance > 0.9)[0].min() 
+
+
+
+# Perform PCA with the chosen number of components and project data onto components
+pca = PCA(n_components, random_state=10)
+pca.fit(scaled_train_features)
+pca_projection =  pd.DataFrame(pca.transform(scaled_train_features))
+
+
+_________________________________________________________________________________________________
+
+
